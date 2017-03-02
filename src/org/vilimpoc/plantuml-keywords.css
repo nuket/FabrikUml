@@ -1,3 +1,18 @@
+.at {
+    -fx-fill: yellowgreen;
+    -fx-font-weight: bold;
+}
+
+.preproc {
+    -fx-fill: crimson;
+    -fx-font-weight: bold;
+}
+
+.type {
+    -fx-fill: dodgerblue;
+    -fx-font-weight: bold;
+}
+
 .keyword {
     -fx-fill: purple;
     -fx-font-weight: bold;
@@ -22,7 +37,7 @@
 }
 
 .comment {
-	-fx-fill: cadetblue;
+    -fx-fill: cadetblue;
 }
 
 .paragraph-box:has-caret {

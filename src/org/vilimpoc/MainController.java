@@ -1,8 +1,24 @@
-/*
- * To change this license header, choose License Headers in Project Properties.
- * To change this template file, choose Tools | Templates
- * and open the template in the editor.
- */
+/**
+    Copyright (c) 2017 Max Vilimpoc
+
+    Permission is hereby granted, free of charge, to any person obtaining a copy
+    of this software and associated documentation files (the "Software"), to deal
+    in the Software without restriction, including without limitation the rights
+    to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+    copies of the Software, and to permit persons to whom the Software is
+    furnished to do so, subject to the following conditions:
+
+    The above copyright notice and this permission notice shall be included in all
+    copies or substantial portions of the Software.
+
+    THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+    IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+    FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+    AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+    LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+    OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+    SOFTWARE.
+*/
 package org.vilimpoc;
 
 import java.io.ByteArrayInputStream;
@@ -54,7 +70,17 @@ public class MainController implements Initializable {
     // PlantUML syntax is defined in the LanguageDescriptor class:
     // https://raw.githubusercontent.com/plantuml/plantuml/master/src/net/sourceforge/plantuml/syntax/LanguageDescriptor.java
     
-    protected static final String[] TYPES = new String[] {
+    protected static final String[] PUML_ATS = new String[] {
+        "@startuml", "@enduml", "@startdot", "@enddot", "@startsalt", 
+        "@endsalt"
+    };
+
+    protected static final String[] PUML_PREPROCS = new String[] {
+        "!include", "!pragma", "!define", "!undef", "!ifdef", 
+        "!endif", "!ifndef", "!else", "!definelong", "!enddefinelong"
+    };
+    
+    protected static final String[] PUML_TYPES = new String[] {
         "actor", "participant", "usecase", "class", "interface", 
         "abstract", "enum", "component", "state", "object", 
         "artifact", "folder", "rectangle", "node", "frame", "cloud", 
@@ -62,9 +88,8 @@ public class MainController implements Initializable {
         "card", "file", "package", "queue"
     };
     
-    protected static final String[] KEYWORDS = new String[] {
-        "@startuml", "@enduml", "@startdot", "@enddot", "@startsalt", 
-        "@endsalt", "as", "also", "autonumber", "caption", "title", 
+    protected static final String[] PUML_KEYWORDS = new String[] {
+        "as", "also", "autonumber", "caption", "title", 
         "newpage", "box", "alt", "else", "opt", "loop", "par", "break", 
         "critical", "note", "rnote", "hnote", "legend", "group", "left", 
         "right", "of", "on", "link", "over", "end", "activate", "deactivate", 
@@ -75,101 +100,50 @@ public class MainController implements Initializable {
         "repeat", "start", "stop", "while", "endwhile", "fork", "again", 
         "kill"
     };
+
+    private static final String ATS_PATTERN        = "("    + String.join("|", PUML_ATS) + ")\\b";
+    private static final String PREPROC_PATTERN    = "("    + String.join("|", PUML_PREPROCS) + ")\\b";
+    private static final String TYPES_PATTERN      = "\\b(" + String.join("|", PUML_TYPES)       + ")\\b";
+    private static final String KEYWORD_PATTERN    = "\\b(" + String.join("|", PUML_KEYWORDS)    + ")\\b";
     
-    protected static final String[] PREPROCS = new String[] {
-        "!include", "!pragma", "!define", "!undef", "!ifdef", 
-        "!endif", "!ifndef", "!else", "!definelong", "!enddefinelong"
-    };
-
-//    private static final String[] KEYWORDS = new String[] {
-//            "abstract", "assert", "boolean", "break", "byte",
-//            "case", "catch", "char", "class", "const",
-//            "continue", "default", "do", "double", "else",
-//            "enum", "extends", "final", "finally", "float",
-//            "for", "goto", "if", "implements", "import",
-//            "instanceof", "int", "interface", "long", "native",
-//            "new", "package", "private", "protected", "public",
-//            "return", "short", "static", "strictfp", "super",
-//            "switch", "synchronized", "this", "throw", "throws",
-//            "transient", "try", "void", "volatile", "while"
-//    };
-
-    private static final String KEYWORD_PATTERN = "\\b(" + String.join("|", KEYWORDS) + ")\\b";
-    private static final String PAREN_PATTERN = "\\(|\\)";
-    private static final String BRACE_PATTERN = "\\{|\\}";
-    private static final String BRACKET_PATTERN = "\\[|\\]";
-    private static final String SEMICOLON_PATTERN = "\\;";
-    private static final String STRING_PATTERN = "\"([^\"\\\\]|\\\\.)*\"";
-    private static final String COMMENT_PATTERN = "//[^\n]*" + "|" + "/\\*(.|\\R)*?\\*/";
+    private static final String PAREN_PATTERN      = "\\(|\\)";
+    private static final String BRACE_PATTERN      = "\\{|\\}";
+    private static final String BRACKET_PATTERN    = "\\[|\\]";
+    private static final String SEMICOLON_PATTERN  = "\\;";
+    private static final String STRING_PATTERN     = "\"([^\"\\\\]|\\\\.)*\"";
+    private static final String COMMENT_PATTERN    = "//[^\n]*" + "|" + "/\\*(.|\\R)*?\\*/";
 
     private static final Pattern PATTERN = Pattern.compile(
-            "(?<KEYWORD>" + KEYWORD_PATTERN + ")"
-            + "|(?<PAREN>" + PAREN_PATTERN + ")"
-            + "|(?<BRACE>" + BRACE_PATTERN + ")"
-            + "|(?<BRACKET>" + BRACKET_PATTERN + ")"
-            + "|(?<SEMICOLON>" + SEMICOLON_PATTERN + ")"
-            + "|(?<STRING>" + STRING_PATTERN + ")"
-            + "|(?<COMMENT>" + COMMENT_PATTERN + ")"
+               "(?<AT>"        + ATS_PATTERN        + ")"
+            + "|(?<PREPROC>"   + PREPROC_PATTERN    + ")"
+            + "|(?<TYPE>"      + TYPES_PATTERN      + ")"
+            + "|(?<KEYWORD>"   + KEYWORD_PATTERN    + ")"
+
+            + "|(?<PAREN>"     + PAREN_PATTERN      + ")"
+            + "|(?<BRACE>"     + BRACE_PATTERN      + ")"
+            + "|(?<BRACKET>"   + BRACKET_PATTERN    + ")"
+            + "|(?<SEMICOLON>" + SEMICOLON_PATTERN  + ")"
+            + "|(?<STRING>"    + STRING_PATTERN     + ")"
+            + "|(?<COMMENT>"   + COMMENT_PATTERN    + ")"
     );
 
     private static final String sampleCode = String.join("\n", new String[] {
-            "package com.example;",
-            "",
-            "import java.util.*;",
-            "",
-            "public class Foo extends Bar implements Baz {",
-            "",
-            "    /*",
-            "     * multi-line comment",
-            "     */",
-            "    public static void main(String[] args) {",
-            "        // single-line comment",
-            "        for(String arg: args) {",
-            "            if(arg.length() != 0)",
-            "                System.out.println(arg);",
-            "            else",
-            "                System.err.println(\"Warning: empty string as argument\");",
-            "        }",
-            "    }",
-            "",
-            "}"
+        "!define",
+        "",
+        "@startuml",
+        "",
+        "actor",
+        "",
+        "Alice -> Bob: Authentication Request",
+        "Bob --> Alice: Authentication Response",
+        "",
+        "Alice -> Bob: Another authentication Request",
+        "Alice <-- Bob: another authentication Response",
+        "@enduml"
     });
 
-    private CodeArea codeArea;
+    private       CodeArea        codeArea;
     public static ExecutorService executor;
-
-//    @Override
-//    public void start(Stage primaryStage) {
-//        executor = Executors.newSingleThreadExecutor();
-//        codeArea = new CodeArea();
-//        codeArea.setParagraphGraphicFactory(LineNumberFactory.get(codeArea));
-//        codeArea.richChanges()
-//                .filter(ch -> !ch.getInserted().equals(ch.getRemoved())) // XXX
-//                .successionEnds(Duration.ofMillis(500))
-//                .supplyTask(this::computeHighlightingAsync)
-//                .awaitLatest(codeArea.richChanges())
-//                .filterMap(t -> {
-//                    if(t.isSuccess()) {
-//                        return Optional.of(t.get());
-//                    } else {
-//                        t.getFailure().printStackTrace();
-//                        return Optional.empty();
-//                    }
-//                })
-//                .subscribe(this::applyHighlighting);
-//        codeArea.replaceText(0, 0, sampleCode);
-//
-//        Scene scene = new Scene(new StackPane(new VirtualizedScrollPane<>(codeArea)), 600, 400);
-//        scene.getStylesheets().add(FabrikUml.class.getResource("java-keywords.css").toExternalForm());
-//        primaryStage.setScene(scene);
-//        primaryStage.setTitle("Java Keywords Async Demo");
-//        primaryStage.show();
-//    }
-//
-//    @Override
-//    public void stop() {
-//        executor.shutdown();
-//    }
 
     private Task<StyleSpans<Collection<String>>> computeHighlightingAsync() {
         String text = codeArea.getText();
@@ -190,17 +164,20 @@ public class MainController implements Initializable {
     private static StyleSpans<Collection<String>> computeHighlighting(String text) {
         Matcher matcher = PATTERN.matcher(text);
         int lastKwEnd = 0;
-        StyleSpansBuilder<Collection<String>> spansBuilder
-                = new StyleSpansBuilder<>();
+        StyleSpansBuilder<Collection<String>> spansBuilder = new StyleSpansBuilder<>();
         while(matcher.find()) {
             String styleClass =
-                    matcher.group("KEYWORD") != null ? "keyword" :
-                    matcher.group("PAREN") != null ? "paren" :
-                    matcher.group("BRACE") != null ? "brace" :
-                    matcher.group("BRACKET") != null ? "bracket" :
-                    matcher.group("SEMICOLON") != null ? "semicolon" :
-                    matcher.group("STRING") != null ? "string" :
-                    matcher.group("COMMENT") != null ? "comment" :
+                    matcher.group("AT")         != null ? "at"        :
+                    matcher.group("PREPROC")    != null ? "preproc"   :
+                    matcher.group("TYPE")       != null ? "type"      :
+                    matcher.group("KEYWORD")    != null ? "keyword"   :
+                    
+                    matcher.group("PAREN")      != null ? "paren"     :
+                    matcher.group("BRACE")      != null ? "brace"     :
+                    matcher.group("BRACKET")    != null ? "bracket"   :
+                    matcher.group("SEMICOLON")  != null ? "semicolon" :
+                    matcher.group("STRING")     != null ? "string"    :
+                    matcher.group("COMMENT")    != null ? "comment"   :
                     null; /* never happens */ assert styleClass != null;
             spansBuilder.add(Collections.emptyList(), matcher.start() - lastKwEnd);
             spansBuilder.add(Collections.singleton(styleClass), matcher.end() - matcher.start());
@@ -259,7 +236,7 @@ public class MainController implements Initializable {
 //        codeAreaPane.setMaxSize(Double.MAX_VALUE, Double.MAX_VALUE);
 
         // codeAreaPane.resize(600, 400);
-        codeAreaPane.getStylesheets().add(FabrikUml.class.getResource("java-keywords.css").toExternalForm());
+        codeAreaPane.getStylesheets().add(FabrikUml.class.getResource("plantuml-keywords.css").toExternalForm());
         
 //        primaryStage.setScene(scene);
 //        primaryStage.setTitle("Java Keywords Async Demo");
@@ -318,7 +295,10 @@ public class MainController implements Initializable {
         try {
             // Open file in editor.
             String data = new String(Files.readAllBytes(Paths.get(filename)));
+
+//            codeArea.clear();
             codeArea.replaceText(data);
+            // applyHighlighting(computeHighlighting(data));
             
             // Go ahead and generate an Image to display.
             generatePng(data);
