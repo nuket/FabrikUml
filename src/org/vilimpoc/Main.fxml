@@ -10,7 +10,7 @@
 <?import javafx.scene.paint.*?>
 <?import javafx.scene.text.*?>
 
-<VBox prefHeight="800.0" prefWidth="1280.0" xmlns="http://javafx.com/javafx/8" xmlns:fx="http://javafx.com/fxml/1" fx:controller="org.vilimpoc.MainDocumentController">
+<VBox prefHeight="800.0" prefWidth="1280.0" xmlns="http://javafx.com/javafx/8" xmlns:fx="http://javafx.com/fxml/1" fx:controller="org.vilimpoc.MainController">
   <children>
     <MenuBar VBox.vgrow="NEVER">
       <menus>
@@ -58,8 +58,12 @@
                   <ListView fx:id="documentListView" maxHeight="1.7976931348623157E308" maxWidth="400.0" onDragDropped="#handleDragDropped" onDragOver="#handleDragOver" onMouseClicked="#handleMouseClicked" prefWidth="300.0" />
                </content>
             </TitledPane>
-            <TextArea fx:id="editor" maxWidth="1.7976931348623157E308" />
-            <Pane maxWidth="1.7976931348623157E308" />
+            <StackPane fx:id="codeAreaPane" />
+            <StackPane fx:id="imagePane">
+               <children>
+                  <ImageView fx:id="imageView" fitHeight="150.0" fitWidth="200.0" pickOnBounds="true" preserveRatio="true" />
+               </children>
+            </StackPane>
          </items>
     </SplitPane>
     <HBox id="HBox" alignment="CENTER_LEFT" spacing="5.0" VBox.vgrow="NEVER">
