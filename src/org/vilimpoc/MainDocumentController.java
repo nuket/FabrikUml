@@ -5,9 +5,14 @@
  */
 package org.vilimpoc;
 
+import java.io.BufferedReader;
 import java.io.File;
+import java.io.FileNotFoundException;
+import java.io.FileReader;
+import java.io.IOException;
 import java.net.URL;
 import java.util.ResourceBundle;
+import java.util.logging.Level;
 import java.util.logging.Logger;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
@@ -15,6 +20,7 @@ import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
 import javafx.scene.control.ListView;
+import javafx.scene.control.TextArea;
 import javafx.scene.input.DragEvent;
 import javafx.scene.input.Dragboard;
 import javafx.scene.input.MouseEvent;
@@ -31,6 +37,9 @@ public class MainDocumentController implements Initializable {
     
     @FXML
     protected ListView<String> documentListView;
+    
+    @FXML
+    protected TextArea editor;
     
     @Override
     public void initialize(URL url, ResourceBundle rb) {
@@ -77,7 +86,21 @@ public class MainDocumentController implements Initializable {
     
     @FXML
     protected void handleMouseClicked(MouseEvent e) {
-        Logger.getGlobal().warning(documentListView.getSelectionModel().getSelectedItem());
+        String filename = documentListView.getSelectionModel().getSelectedItem();
+        
+        Logger.getGlobal().warning(filename);
+        
+        try {
+            // Open file in editor.
+            BufferedReader in = new BufferedReader(new FileReader(filename));
+            
+            editor.clear();
+            editor.appendText(in.readLine());
+        } catch (FileNotFoundException ex) {
+            Logger.getLogger(MainDocumentController.class.getName()).log(Level.SEVERE, null, ex);
+        } catch (IOException ex) {
+            Logger.getLogger(MainDocumentController.class.getName()).log(Level.SEVERE, null, ex);
+        }
     }
             
 }

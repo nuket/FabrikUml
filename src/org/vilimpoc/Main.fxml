@@ -58,7 +58,7 @@
                   <ListView fx:id="documentListView" maxHeight="1.7976931348623157E308" maxWidth="400.0" onDragDropped="#handleDragDropped" onDragOver="#handleDragOver" onMouseClicked="#handleMouseClicked" prefWidth="300.0" />
                </content>
             </TitledPane>
-            <TextArea maxWidth="1.7976931348623157E308" />
+            <TextArea fx:id="editor" maxWidth="1.7976931348623157E308" />
             <Pane maxWidth="1.7976931348623157E308" />
          </items>
     </SplitPane>
