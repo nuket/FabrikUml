@@ -5,15 +5,12 @@
  */
 package org.vilimpoc;
 
-import java.io.BufferedReader;
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.FileNotFoundException;
-import java.io.FileReader;
 import java.io.IOException;
 import java.io.InputStream;
-import java.io.OutputStream;
 import java.net.URL;
 import java.nio.file.Files;
 import java.nio.file.Paths;
@@ -28,28 +25,21 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
-import javafx.application.Platform;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.concurrent.Task;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
-import javafx.scene.Scene;
 import javafx.scene.control.ListView;
-import javafx.scene.control.TextArea;
 import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
 import javafx.scene.input.DragEvent;
 import javafx.scene.input.Dragboard;
 import javafx.scene.input.MouseEvent;
 import javafx.scene.input.TransferMode;
-import javafx.scene.layout.BackgroundImage;
-import javafx.scene.layout.Pane;
 import javafx.scene.layout.StackPane;
-import javafx.stage.Stage;
 import net.sourceforge.plantuml.SourceStringReader;
-import org.fxmisc.flowless.VirtualizedScrollPane;
 import org.fxmisc.richtext.CodeArea;
 import org.fxmisc.richtext.LineNumberFactory;
 import org.fxmisc.richtext.model.StyleSpans;
@@ -60,19 +50,49 @@ import org.fxmisc.richtext.model.StyleSpansBuilder;
  * @author Max
  */
 public class MainController implements Initializable {
+
+    // PlantUML syntax is defined in the LanguageDescriptor class:
+    // https://raw.githubusercontent.com/plantuml/plantuml/master/src/net/sourceforge/plantuml/syntax/LanguageDescriptor.java
     
-    private static final String[] KEYWORDS = new String[] {
-            "abstract", "assert", "boolean", "break", "byte",
-            "case", "catch", "char", "class", "const",
-            "continue", "default", "do", "double", "else",
-            "enum", "extends", "final", "finally", "float",
-            "for", "goto", "if", "implements", "import",
-            "instanceof", "int", "interface", "long", "native",
-            "new", "package", "private", "protected", "public",
-            "return", "short", "static", "strictfp", "super",
-            "switch", "synchronized", "this", "throw", "throws",
-            "transient", "try", "void", "volatile", "while"
+    protected static final String[] TYPES = new String[] {
+        "actor", "participant", "usecase", "class", "interface", 
+        "abstract", "enum", "component", "state", "object", 
+        "artifact", "folder", "rectangle", "node", "frame", "cloud", 
+        "database", "storage", "agent", "boundary", "control", "entity", 
+        "card", "file", "package", "queue"
     };
+    
+    protected static final String[] KEYWORDS = new String[] {
+        "@startuml", "@enduml", "@startdot", "@enddot", "@startsalt", 
+        "@endsalt", "as", "also", "autonumber", "caption", "title", 
+        "newpage", "box", "alt", "else", "opt", "loop", "par", "break", 
+        "critical", "note", "rnote", "hnote", "legend", "group", "left", 
+        "right", "of", "on", "link", "over", "end", "activate", "deactivate", 
+        "destroy", "create", "footbox", "hide", "show", "skinparam", "skin", 
+        "top", "bottom", "top to bottom direction", "package", "namespace", 
+        "page", "up", "down", "if", "else", "elseif", "endif", "partition", 
+        "footer", "header", "center", "rotate", "ref", "return", "is", 
+        "repeat", "start", "stop", "while", "endwhile", "fork", "again", 
+        "kill"
+    };
+    
+    protected static final String[] PREPROCS = new String[] {
+        "!include", "!pragma", "!define", "!undef", "!ifdef", 
+        "!endif", "!ifndef", "!else", "!definelong", "!enddefinelong"
+    };
+
+//    private static final String[] KEYWORDS = new String[] {
+//            "abstract", "assert", "boolean", "break", "byte",
+//            "case", "catch", "char", "class", "const",
+//            "continue", "default", "do", "double", "else",
+//            "enum", "extends", "final", "finally", "float",
+//            "for", "goto", "if", "implements", "import",
+//            "instanceof", "int", "interface", "long", "native",
+//            "new", "package", "private", "protected", "public",
+//            "return", "short", "static", "strictfp", "super",
+//            "switch", "synchronized", "this", "throw", "throws",
+//            "transient", "try", "void", "volatile", "while"
+//    };
 
     private static final String KEYWORD_PATTERN = "\\b(" + String.join("|", KEYWORDS) + ")\\b";
     private static final String PAREN_PATTERN = "\\(|\\)";
