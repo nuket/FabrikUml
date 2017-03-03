@@ -61,7 +61,7 @@
             <StackPane fx:id="codeAreaPane" />
             <StackPane fx:id="imagePane">
                <children>
-                  <ImageView fx:id="imageView" fitHeight="150.0" fitWidth="200.0" pickOnBounds="true" preserveRatio="true" />
+                  <ImageView fx:id="imageView" fitHeight="200.0" fitWidth="200.0" pickOnBounds="true" preserveRatio="true" />
                </children>
             </StackPane>
          </items>

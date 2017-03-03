@@ -1,6 +1,19 @@
-# new-project-1
+# FabrikUml
 
-Currently a placeholder.
+A quick little PlantUML previewer, using JavaFX.
+
+If I knew what I was doing, it would have taken less than 8 hours to write.
+
+Looks like this:
+
+![Screenshot](editing-window.png)
+
+Works by dragging and dropping a file into the Documents pane. 
+
+## TODOs:
+
+* Doesn't currently save files.
+* Proper packaging, remove NetBeans requirement.
 
 # Licenses
 

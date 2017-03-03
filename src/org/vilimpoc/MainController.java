@@ -45,6 +45,7 @@ import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.concurrent.Task;
 import javafx.event.ActionEvent;
+import javafx.event.EventHandler;
 import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
 import javafx.scene.control.ListView;
@@ -52,8 +53,13 @@ import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
 import javafx.scene.input.DragEvent;
 import javafx.scene.input.Dragboard;
+import javafx.scene.input.KeyCode;
+import javafx.scene.input.KeyCodeCombination;
+import javafx.scene.input.KeyCombination;
+import javafx.scene.input.KeyEvent;
 import javafx.scene.input.MouseEvent;
 import javafx.scene.input.TransferMode;
+import javafx.scene.layout.BorderPane;
 import javafx.scene.layout.StackPane;
 import net.sourceforge.plantuml.SourceStringReader;
 import org.fxmisc.richtext.CodeArea;
@@ -201,6 +207,9 @@ public class MainController implements Initializable {
     
     @FXML
     protected ImageView imageView;
+
+    // This actually matches any time S is pressed. LOL.
+    final KeyCombination save = new KeyCodeCombination(KeyCode.S, KeyCombination.CONTROL_ANY);
     
     @Override
     public void initialize(URL url, ResourceBundle rb) {
@@ -226,21 +235,28 @@ public class MainController implements Initializable {
                 })
                 .subscribe(this::applyHighlighting);
         codeArea.replaceText(0, 0, sampleCode);
-
-//        Scene scene = new Scene(new StackPane(new VirtualizedScrollPane<>(codeArea)), 600, 400);
-//        scene.getStylesheets().add(FabrikUml.class.getResource("java-keywords.css").toExternalForm());
-
-//        codeArea.setMaxSize(Double.MAX_VALUE, Double.MAX_VALUE);
+        
+        // TODO: Rerender after no keystroke has been entered in 500ms.
+        
+        // TODO: Properly set up keyboard shortcuts (CTRL-S saves the file and rerenders 
+        // the PlantUML preview)
+        codeArea.setOnKeyReleased((KeyEvent event) -> {
+            // if (event.getCode() == KeyCode.S && event.isControlDown()) {
+            if (save.match(event)) {
+                try {
+                    generatePng(codeArea.getText());
+                } catch (IOException ex) {
+                    Logger.getLogger(MainController.class.getName()).log(Level.SEVERE, null, ex);
+                }
+            }
+        });
         
         codeAreaPane.getChildren().add(codeArea);
-//        codeAreaPane.setMaxSize(Double.MAX_VALUE, Double.MAX_VALUE);
-
-        // codeAreaPane.resize(600, 400);
         codeAreaPane.getStylesheets().add(FabrikUml.class.getResource("plantuml-keywords.css").toExternalForm());
         
-//        primaryStage.setScene(scene);
-//        primaryStage.setTitle("Java Keywords Async Demo");
-//        primaryStage.show();
+        imageView.fitWidthProperty().bind(imagePane.widthProperty());
+        imageView.fitHeightProperty().bind(imagePane.heightProperty());
+        imageView.setPreserveRatio(true);
     }
     
     @FXML
@@ -296,9 +312,7 @@ public class MainController implements Initializable {
             // Open file in editor.
             String data = new String(Files.readAllBytes(Paths.get(filename)));
 
-//            codeArea.clear();
             codeArea.replaceText(data);
-            // applyHighlighting(computeHighlighting(data));
             
             // Go ahead and generate an Image to display.
             generatePng(data);
@@ -322,7 +336,6 @@ public class MainController implements Initializable {
         InputStream pngLoad = new ByteArrayInputStream(png.toByteArray());
         
         Image diagram = new Image(pngLoad);
-        // imagePane.set
         // imagePane.getBackground().getImages().add(new BackgroundImage(diagram, null, null, null, null));
         
         imageView.setImage(diagram);
