@@ -48,6 +48,7 @@ import javafx.event.ActionEvent;
 import javafx.event.EventHandler;
 import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
+import javafx.scene.control.Label;
 import javafx.scene.control.ListView;
 import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
@@ -207,6 +208,9 @@ public class MainController implements Initializable {
     
     @FXML
     protected ImageView imageView;
+    
+    @FXML
+    protected Label elapsedTimeMs;
 
     // This actually matches any time S is pressed. LOL.
     final KeyCombination save = new KeyCodeCombination(KeyCode.S, KeyCombination.CONTROL_ANY);
@@ -313,7 +317,7 @@ public class MainController implements Initializable {
             String data = new String(Files.readAllBytes(Paths.get(filename)));
 
             codeArea.replaceText(data);
-            
+
             // Go ahead and generate an Image to display.
             generatePng(data);
         } catch (FileNotFoundException ex) {
@@ -325,6 +329,9 @@ public class MainController implements Initializable {
     
     protected void generatePng(String uml) throws IOException
     {
+        // Time the image generation.
+        long startTime = System.nanoTime();
+
         ByteArrayOutputStream png = new ByteArrayOutputStream(1000000);
         SourceStringReader reader = new SourceStringReader(uml);
 
@@ -341,6 +348,13 @@ public class MainController implements Initializable {
         imageView.setImage(diagram);
         
         // Return a null string if no generation.
+        
+        long stopTime = System.nanoTime();
+        long elapsed = (stopTime - startTime) / 10000000;
+
+        Logger.getGlobal().log(Level.WARNING, "{0}ms", Long.toString(elapsed));
+
+        elapsedTimeMs.setText(Long.toString(elapsed) + "ms");
     }
 
 }
