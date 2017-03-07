@@ -101,6 +101,7 @@ public class PlantUmlSyntax {
         "",
         "Alice -> Bob: Request",
         "Alice <-- Bob: Response",
+        "",
         "@enduml"
     });
     

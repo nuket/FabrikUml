@@ -116,7 +116,7 @@ public class TabController implements Initializable {
         // TODO: Rerender after no keystroke has been entered in 500ms.
         
 //        codeAreaPane.getChildren().add(codeArea);
-//        codeAreaPane.getStylesheets().add(FabrikUml.class.getResource("plantuml-keywords.css").toExternalForm());
+        codeAreaPane.getStylesheets().add(FabrikUml.class.getResource("PlantUmlSyntax.css").toExternalForm());
 //        
 //        imageView.fitWidthProperty().bind(imagePane.widthProperty());
 //        imageView.fitHeightProperty().bind(imagePane.heightProperty());
