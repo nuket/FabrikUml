@@ -4,6 +4,7 @@
 <?import java.util.*?>
 <?import javafx.scene.*?>
 <?import javafx.scene.control.*?>
+<?import javafx.scene.image.*?>
 <?import javafx.scene.layout.*?>
 <?import org.fxmisc.richtext.CodeArea?>
 
@@ -14,8 +15,9 @@
               <StackPane fx:id="codeAreaPane" prefHeight="150.0" prefWidth="200.0">
                   <CodeArea fx:id="codeArea" prefHeight="150.0" prefWidth="200.0" />
               </StackPane>
-              <!-- <AnchorPane minHeight="0.0" minWidth="0.0" prefHeight="160.0" prefWidth="100.0" /> -->
-              <StackPane prefHeight="150.0" prefWidth="200.0" />
+              <StackPane prefHeight="150.0" prefWidth="200.0">
+                  <ImageView fx:id="preview" />
+              </StackPane>
           </items>
         </SplitPane>
      </content>

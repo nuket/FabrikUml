@@ -20,8 +20,6 @@ Looks like this:
 ## FabrikUml
 
 ```
-MIT License
-
 Copyright (c) 2017 Max Vilimpoc
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
