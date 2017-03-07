@@ -28,6 +28,7 @@ import javafx.scene.Parent;
 
 import javafx.application.Application;
 import javafx.scene.Scene;
+import javafx.scene.control.Tab;
 import javafx.stage.Stage;
 
 
@@ -37,6 +38,8 @@ public class FabrikUml extends Application {
     public void start(Stage stage) throws Exception {
         ResourceBundle bundle = ResourceBundle.getBundle("org.vilimpoc.resources.FabrikUml");
         Parent root = FXMLLoader.load(getClass().getResource("Main.fxml"), bundle);
+        
+        // Tab tab = FXMLLoader.load(getClass().getResource("Tab.fxml"), bundle);
         
         Scene scene = new Scene(root);
         

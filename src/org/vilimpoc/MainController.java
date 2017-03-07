@@ -47,9 +47,13 @@ import javafx.concurrent.Task;
 import javafx.event.ActionEvent;
 import javafx.event.EventHandler;
 import javafx.fxml.FXML;
+import javafx.fxml.FXMLLoader;
 import javafx.fxml.Initializable;
 import javafx.scene.control.Label;
 import javafx.scene.control.ListView;
+import javafx.scene.control.SplitPane;
+import javafx.scene.control.Tab;
+import javafx.scene.control.TabPane;
 import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
 import javafx.scene.input.DragEvent;
@@ -139,13 +143,20 @@ public class MainController implements Initializable {
         "",
         "@startuml",
         "",
-        "actor",
-        "",
         "Alice -> Bob: Authentication Request",
         "Bob --> Alice: Authentication Response",
         "",
         "Alice -> Bob: Another authentication Request",
-        "Alice <-- Bob: another authentication Response",
+        "Alice <-- Bob: Another authentication Response",
+        "",
+        "Alice -> Bob: Request",
+        "Alice <-- Bob: Response",
+        "",
+        "Alice -> Bob: Request",
+        "Alice <-- Bob: Response",
+        "",
+        "Alice -> Bob: Request",
+        "Alice <-- Bob: Response",
         "@enduml"
     });
 
@@ -197,17 +208,20 @@ public class MainController implements Initializable {
     // Absolute file paths are unique.
     protected final ObservableList<String> filenames = FXCollections.observableArrayList();
     
-    @FXML
-    protected ListView<String> documentListView;
+//    @FXML
+//    protected ListView<String> documentListView;
+//    
+//    @FXML
+//    protected StackPane codeAreaPane;
+//    
+//    @FXML
+//    protected StackPane imagePane;
+//    
+//    @FXML
+//    protected ImageView imageView;
     
     @FXML
-    protected StackPane codeAreaPane;
-    
-    @FXML
-    protected StackPane imagePane;
-    
-    @FXML
-    protected ImageView imageView;
+    protected TabPane tabPane;
     
     @FXML
     protected Label elapsedTimeMs;
@@ -217,8 +231,10 @@ public class MainController implements Initializable {
     
     @Override
     public void initialize(URL url, ResourceBundle rb) {
-        documentListView.setItems(filenames);
-        
+//        documentListView.setItems(filenames);
+        // tabPane.getTabs()
+
+
         // Attach the CodeArea.
         executor = Executors.newSingleThreadExecutor();
         
@@ -255,23 +271,39 @@ public class MainController implements Initializable {
             }
         });
         
-        codeAreaPane.getChildren().add(codeArea);
-        codeAreaPane.getStylesheets().add(FabrikUml.class.getResource("plantuml-keywords.css").toExternalForm());
-        
-        imageView.fitWidthProperty().bind(imagePane.widthProperty());
-        imageView.fitHeightProperty().bind(imagePane.heightProperty());
-        imageView.setPreserveRatio(true);
+//        codeAreaPane.getChildren().add(codeArea);
+//        codeAreaPane.getStylesheets().add(FabrikUml.class.getResource("plantuml-keywords.css").toExternalForm());
+//        
+//        imageView.fitWidthProperty().bind(imagePane.widthProperty());
+//        imageView.fitHeightProperty().bind(imagePane.heightProperty());
+//        imageView.setPreserveRatio(true);
     }
+
+    static int i = 0;
     
     @FXML
     protected void handleNewAction(ActionEvent e) {
+        System.out.println("Fun times.");
+        
+//        Tab tab = new Tab("Tab" + Integer.toString(i));
+//        SplitPane splitPane = new SplitPane();
+        
+        try {
+            // Create a new Tab, configure it up.
+            Tab tab = FXMLLoader.load(getClass().getResource("Tab.fxml"), null);
+            tab.setText("Tab " + Integer.toString(i++));
+            
+            tabPane.getTabs().add(tab);
+        } catch (IOException ex) {
+            Logger.getLogger(MainController.class.getName()).log(Level.SEVERE, null, ex);
+        }
     }
     
     @FXML
     protected void handleDragOver(DragEvent e) {
-        if (e.getGestureSource() != documentListView) {
-            e.acceptTransferModes(TransferMode.ANY);
-        }
+//        if (e.getGestureSource() != documentListView) {
+//            e.acceptTransferModes(TransferMode.ANY);
+//        }
         
         e.consume();
     }
@@ -305,10 +337,10 @@ public class MainController implements Initializable {
     
     @FXML
     protected void handleMouseClicked(MouseEvent e) {
-        String filename = documentListView.getSelectionModel().getSelectedItem();
-        Logger.getGlobal().warning(filename);
-        
-        openFile(filename);
+//        String filename = documentListView.getSelectionModel().getSelectedItem();
+//        Logger.getGlobal().warning(filename);
+//        
+//        openFile(filename);
     }
 
     protected void openFile(String filename) {
@@ -345,7 +377,7 @@ public class MainController implements Initializable {
         Image diagram = new Image(pngLoad);
         // imagePane.getBackground().getImages().add(new BackgroundImage(diagram, null, null, null, null));
         
-        imageView.setImage(diagram);
+//        imageView.setImage(diagram);
         
         // Return a null string if no generation.
         
