@@ -57,14 +57,15 @@ public class MainController implements Initializable {
     private Label   elapsedTimeMs;
 
     private final KeyCombination new_ = new KeyCodeCombination(KeyCode.N, KeyCombination.CONTROL_DOWN);
-    private final KeyCombination save = new KeyCodeCombination(KeyCode.S, KeyCombination.CONTROL_DOWN);
     
     // Observe the filenames list and open new tabs accordingly.
 
-    static int untitledId = 0;
-    
+    private int untitledId = 0;
+
     @Override
-    public void initialize(URL url, ResourceBundle rb) {        
+    public void initialize(URL url, ResourceBundle rb) {    
+        // TODO: Recreate Window with open all previous files in Tabs
+        
         createUntitledTab();
     }
     
@@ -74,12 +75,6 @@ public class MainController implements Initializable {
         
         if (new_.match(e)) {
             createUntitledTab();
-        }
-        else
-        if (save.match(e)) {
-            System.out.println("Save all.");
-            
-            // Walk through all open tabs and request a save.
         }
     }
     
@@ -112,7 +107,7 @@ public class MainController implements Initializable {
     
     private void createUntitledTab() {
         try {
-            TabModel tabModel = new TabModel(true, File.createTempFile("FabrikUml", "plantuml"), "Untitled " + untitledId++);
+            TabModel tabModel = new TabModel(true, File.createTempFile("FabrikUml-", ".plantuml"), "Untitled " + untitledId++);
             createNewTab(tabModel);
         } catch (IOException ex) {
             Logger.getLogger(MainController.class.getName()).log(Level.SEVERE, "Could not create temporary file.", ex);
@@ -168,5 +163,5 @@ public class MainController implements Initializable {
         e.setDropCompleted(success);
         e.consume();
     }
-
+    
 }

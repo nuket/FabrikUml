@@ -8,9 +8,9 @@
 <?import javafx.scene.layout.*?>
 <?import org.fxmisc.richtext.CodeArea?>
 
-<Tab xmlns:fx="http://javafx.com/fxml/1" fx:controller="org.vilimpoc.TabController" closable="true">
+<Tab xmlns:fx="http://javafx.com/fxml/1" fx:controller="org.vilimpoc.TabController" onClosed="#handleOnClosed">
      <content>
-        <SplitPane fx:id="splitPane" dividerPositions="0.5" maxHeight="1.7976931348623157E308" maxWidth="1.7976931348623157E308">
+        <SplitPane fx:id="splitPane" onKeyPressed="#handleShortcuts" dividerPositions="0.5" maxHeight="1.7976931348623157E308" maxWidth="1.7976931348623157E308">
           <items>
               <StackPane fx:id="codeAreaPane" prefHeight="150.0" prefWidth="200.0">
                   <CodeArea fx:id="codeArea" prefHeight="150.0" prefWidth="200.0" />

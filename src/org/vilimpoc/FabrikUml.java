@@ -53,7 +53,7 @@ public class FabrikUml extends Application {
         //
         // Without this, the program will not terminate clearly, as the executor
         // thread isn't cleaned up.
-        // TabController.executor.shutdown();
+        TabController.shutdownAll();
         
         super.stop(); //To change body of generated methods, choose Tools | Templates.
     }

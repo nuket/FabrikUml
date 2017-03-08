@@ -6,11 +6,17 @@ import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.UnsupportedEncodingException;
 import java.net.URL;
+import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
+import java.nio.file.OpenOption;
+import java.nio.file.StandardOpenOption;
 import java.time.Duration;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.LinkedList;
+import java.util.List;
 import java.util.Optional;
 import java.util.ResourceBundle;
 import java.util.concurrent.ExecutorService;
@@ -23,6 +29,10 @@ import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
 import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
+import javafx.scene.input.KeyCode;
+import javafx.scene.input.KeyCodeCombination;
+import javafx.scene.input.KeyCombination;
+import javafx.scene.input.KeyEvent;
 import javafx.scene.layout.StackPane;
 import net.sourceforge.plantuml.SourceStringReader;
 import org.fxmisc.richtext.CodeArea;
@@ -30,11 +40,6 @@ import org.fxmisc.richtext.LineNumberFactory;
 import org.fxmisc.richtext.model.StyleSpans;
 import org.fxmisc.richtext.model.StyleSpansBuilder;
 
-/**
- * FXML Controller class
- *
- * @author Max
- */
 public class TabController implements Initializable {
 
     @FXML
@@ -46,7 +51,20 @@ public class TabController implements Initializable {
     @FXML
     private ImageView preview;
 
+    private final KeyCombination save = new KeyCodeCombination(KeyCode.S, KeyCombination.CONTROL_DOWN);
+    
+    private TabModel model;
+    
     private ExecutorService executor;
+    
+    private static List<ExecutorService> executors = new LinkedList<>();
+    
+    protected static void shutdownAll() {
+        for (ExecutorService e : executors) {
+            System.out.println("Shutting down ExecutorService: " + e);
+            e.shutdown();
+        }
+    }
     
     private Task<StyleSpans<Collection<String>>> computeHighlightingAsync() {
         String text = codeArea.getText();
@@ -100,6 +118,10 @@ public class TabController implements Initializable {
         // Attach the CodeArea.
         executor = Executors.newSingleThreadExecutor();
         
+        // Add the Executor to the overall executors list, for 
+        // cleanly shutting down later.
+        executors.add(executor);
+        
         // codeArea = new CodeArea();
         codeArea.setParagraphGraphicFactory(LineNumberFactory.get(codeArea));
         codeArea.richChanges()
@@ -130,6 +152,7 @@ public class TabController implements Initializable {
     }
     
     protected void setTabModel(TabModel model) {
+        this.model = model;
     }
     
     protected void openFile(File f) {
@@ -145,6 +168,19 @@ public class TabController implements Initializable {
             Logger.getLogger(MainController.class.getName()).log(Level.SEVERE, null, ex);
         } catch (IOException ex) {
             Logger.getLogger(MainController.class.getName()).log(Level.SEVERE, null, ex);
+        }
+    }
+    
+    protected void saveData() {
+        try {
+            Files.write(
+                model.backingFile.toPath(), 
+                codeArea.getText().getBytes(StandardCharsets.UTF_8), 
+                StandardOpenOption.CREATE, StandardOpenOption.TRUNCATE_EXISTING, StandardOpenOption.WRITE);
+        } catch (UnsupportedEncodingException ex) {
+            Logger.getLogger(TabController.class.getName()).log(Level.SEVERE, null, ex);
+        } catch (IOException ex) {
+            Logger.getLogger(TabController.class.getName()).log(Level.SEVERE, null, ex);
         }
     }
     
@@ -179,8 +215,25 @@ public class TabController implements Initializable {
         // elapsedTimeMs.setText(Long.toString(elapsed) + "ms");
     }
     
-    protected void shutdown() {
+    @FXML
+    protected void handleOnClosed() {
+        System.out.println("Tab closed");
+        
+        executors.remove(executor);
         executor.shutdown();
+    }
+  
+    @FXML
+    protected void handleShortcuts(KeyEvent e) {
+        System.out.println("Key pressed in Tab.");
+        
+        if (save.match(e)) {
+            System.out.println("Save Tab: " + e.getSource());
+            
+            // Check the current TabModel and save data
+            // to that file where possible.
+            saveData();
+        }
     }
 
 }
