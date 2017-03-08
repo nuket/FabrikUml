@@ -8,7 +8,7 @@
 <?import javafx.scene.layout.*?>
 <?import org.fxmisc.richtext.CodeArea?>
 
-<Tab xmlns:fx="http://javafx.com/fxml/1" fx:controller="org.vilimpoc.TabController" onClosed="#handleOnClosed">
+<Tab xmlns:fx="http://javafx.com/fxml/1" fx:id="tab" fx:controller="org.vilimpoc.TabController" onClosed="#handleOnClosed">
      <content>
         <SplitPane fx:id="splitPane" onKeyPressed="#handleShortcuts" dividerPositions="0.5" maxHeight="1.7976931348623157E308" maxWidth="1.7976931348623157E308">
           <items>

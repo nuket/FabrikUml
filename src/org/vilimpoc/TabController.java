@@ -1,5 +1,6 @@
 package org.vilimpoc;
 
+import com.sun.glass.ui.Application;
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.File;
@@ -27,6 +28,7 @@ import java.util.regex.Matcher;
 import javafx.concurrent.Task;
 import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
+import javafx.scene.control.Tab;
 import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
 import javafx.scene.input.KeyCode;
@@ -34,6 +36,8 @@ import javafx.scene.input.KeyCodeCombination;
 import javafx.scene.input.KeyCombination;
 import javafx.scene.input.KeyEvent;
 import javafx.scene.layout.StackPane;
+import javafx.stage.FileChooser;
+import javafx.stage.FileChooser.ExtensionFilter;
 import net.sourceforge.plantuml.SourceStringReader;
 import org.fxmisc.richtext.CodeArea;
 import org.fxmisc.richtext.LineNumberFactory;
@@ -42,6 +46,9 @@ import org.fxmisc.richtext.model.StyleSpansBuilder;
 
 public class TabController implements Initializable {
 
+    @FXML
+    private Tab       tab;
+    
     @FXML
     private StackPane codeAreaPane;
     
@@ -58,6 +65,11 @@ public class TabController implements Initializable {
     private ExecutorService executor;
     
     private static List<ExecutorService> executors = new LinkedList<>();
+    
+    // Note the last-used folder, and go to it automatically when 
+    // opening or saving a file.
+    private static String lastUsedFolder;
+    
     
     protected static void shutdownAll() {
         for (ExecutorService e : executors) {
@@ -172,11 +184,30 @@ public class TabController implements Initializable {
     }
     
     protected void saveData() {
+        if (model.untitled) {
+            FileChooser fileChooser = new FileChooser();
+            fileChooser.setTitle("Open PlantUML File");
+            fileChooser.getExtensionFilters().addAll(
+                    new ExtensionFilter("PlantUML Files", "*.plantuml"),
+                    new ExtensionFilter("All Files", "*.*"));
+            
+            File selectedFile = fileChooser.showSaveDialog(codeAreaPane.getScene().getWindow());
+            
+            if (selectedFile != null) {
+                model.backingFile = selectedFile;
+            }
+        }
+
+        System.out.println("Save Tab: " + model.backingFile);
+        
         try {
             Files.write(
                 model.backingFile.toPath(), 
                 codeArea.getText().getBytes(StandardCharsets.UTF_8), 
                 StandardOpenOption.CREATE, StandardOpenOption.TRUNCATE_EXISTING, StandardOpenOption.WRITE);
+            
+            tab.setText(model.backingFile.getName());
+            // codeAreaPane.getParent()).setText(model.backingFile.getName();
         } catch (UnsupportedEncodingException ex) {
             Logger.getLogger(TabController.class.getName()).log(Level.SEVERE, null, ex);
         } catch (IOException ex) {
@@ -224,12 +255,8 @@ public class TabController implements Initializable {
     }
   
     @FXML
-    protected void handleShortcuts(KeyEvent e) {
-        System.out.println("Key pressed in Tab.");
-        
-        if (save.match(e)) {
-            System.out.println("Save Tab: " + e.getSource());
-            
+    protected void handleShortcuts(KeyEvent e) {        
+        if (save.match(e)) {            
             // Check the current TabModel and save data
             // to that file where possible.
             saveData();
