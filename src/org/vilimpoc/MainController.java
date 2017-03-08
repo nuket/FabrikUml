@@ -45,6 +45,7 @@ import javafx.scene.input.Dragboard;
 import javafx.scene.input.KeyCode;
 import javafx.scene.input.KeyCodeCombination;
 import javafx.scene.input.KeyCombination;
+import javafx.scene.input.KeyEvent;
 import javafx.scene.input.MouseEvent;
 import javafx.scene.input.TransferMode;
 import net.sourceforge.plantuml.SourceStringReader;
@@ -53,7 +54,7 @@ import net.sourceforge.plantuml.SourceStringReader;
  *
  * @author Max
  */
-class MainController implements Initializable {
+public class MainController implements Initializable {
 
     // Absolute file paths are unique.
     private final ObservableList<String> filenames = FXCollections.observableArrayList();
@@ -72,11 +73,7 @@ class MainController implements Initializable {
     
     @Override
     public void initialize(URL url, ResourceBundle rb) {
-        // tabPane.getTabs().
         
-//        documentListView.setItems(filenames);
-        // tabPane.getTabs()
-
 //        // TODO: Properly set up keyboard shortcuts (CTRL-S saves the file and rerenders 
 //        // the PlantUML preview)
 //        codeArea.setOnKeyReleased((KeyEvent event) -> {
@@ -91,10 +88,14 @@ class MainController implements Initializable {
 //        });
     }
     
-//    @FXML
-//    protected void handleGlobalShortcuts(KeyEvent e) {
-//        System.out.println("Key pressed.");
-//    }
+    @FXML
+    protected void handleGlobalShortcuts(KeyEvent e) {
+        System.out.println("Key pressed.");
+        
+        if (save.match(e)) {
+            System.out.println("Save all.");
+        }
+    }
     
     static int i = 0;
     
