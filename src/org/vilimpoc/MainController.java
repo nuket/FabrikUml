@@ -21,11 +21,8 @@
 */
 package org.vilimpoc;
 
-import java.io.ByteArrayInputStream;
-import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.IOException;
-import java.io.InputStream;
 import java.net.URL;
 import java.util.ResourceBundle;
 import java.util.logging.Level;
@@ -39,7 +36,6 @@ import javafx.fxml.Initializable;
 import javafx.scene.control.Label;
 import javafx.scene.control.Tab;
 import javafx.scene.control.TabPane;
-import javafx.scene.image.Image;
 import javafx.scene.input.DragEvent;
 import javafx.scene.input.Dragboard;
 import javafx.scene.input.KeyCode;
@@ -48,104 +44,97 @@ import javafx.scene.input.KeyCombination;
 import javafx.scene.input.KeyEvent;
 import javafx.scene.input.MouseEvent;
 import javafx.scene.input.TransferMode;
-import net.sourceforge.plantuml.SourceStringReader;
 
-/**
- *
- * @author Max
- */
 public class MainController implements Initializable {
 
     // Absolute file paths are unique.
     private final ObservableList<String> filenames = FXCollections.observableArrayList();
-
+    
     @FXML
     private TabPane tabPane;
     
     @FXML
     private Label   elapsedTimeMs;
 
-    
+    private final KeyCombination new_ = new KeyCodeCombination(KeyCode.N, KeyCombination.CONTROL_DOWN);
     private final KeyCombination save = new KeyCodeCombination(KeyCode.S, KeyCombination.CONTROL_DOWN);
     
     // Observe the filenames list and open new tabs accordingly.
-    
+
+    static int untitledId = 0;
     
     @Override
-    public void initialize(URL url, ResourceBundle rb) {
-        
-//        // TODO: Properly set up keyboard shortcuts (CTRL-S saves the file and rerenders 
-//        // the PlantUML preview)
-//        codeArea.setOnKeyReleased((KeyEvent event) -> {
-//            // if (event.getCode() == KeyCode.S && event.isControlDown()) {
-//            if (save.match(event)) {
-//                try {
-//                    generatePng(codeArea.getText());
-//                } catch (IOException ex) {
-//                    Logger.getLogger(MainController.class.getName()).log(Level.SEVERE, null, ex);
-//                }
-//            }
-//        });
+    public void initialize(URL url, ResourceBundle rb) {        
+        createUntitledTab();
     }
     
     @FXML
     protected void handleGlobalShortcuts(KeyEvent e) {
         System.out.println("Key pressed.");
         
+        if (new_.match(e)) {
+            createUntitledTab();
+        }
+        else
         if (save.match(e)) {
             System.out.println("Save all.");
+            
+            // Walk through all open tabs and request a save.
         }
     }
     
-    static int i = 0;
-    
-    protected void createNewTab(String filename) {
-        File f = new File(filename);
-
-        if (!f.exists()) {
-            System.err.println("File does not exist.");
+    protected void createNewTab(TabModel tabModel) {
+        if (!tabModel.backingFile.exists()) {
+            System.err.println("File does not exist, will not open new editing tab.");
             return;
         }
         
         try {
-            // Create a new Tab, configure it up.
-            // ResourceBundle rb = ResourceBundle.getBundle("");
-            
             FXMLLoader loader = new FXMLLoader(
                 getClass().getResource(
                     "Tab.fxml"
                 )
             );
 
-//            Tab tab = FXMLLoader.load(getClass().getResource("Tab.fxml"));
-//            tab.setText("Tab " + Integer.toString(i++));
-            
-//            Tab tab = FXMLLoader.FXMLLoader.load(getClass().getResource("Tab.fxml"), null);
-            // tab.setText(name);
-            
-            TabController tabController = loader.<TabController>getController();
-            tabController.openFile(f);
-            
             Tab tab = (Tab) loader.load();
+            TabController tabController = loader.<TabController>getController();
+            
+            System.out.println(tabModel);
+            
+            tab.setText(tabModel.tabText);
+            tabController.setTabModel(tabModel);
+            
             tabPane.getTabs().add(tab);
         } catch (IOException ex) {
             Logger.getLogger(MainController.class.getName()).log(Level.SEVERE, null, ex);
+        }        
+    }
+    
+    private void createUntitledTab() {
+        try {
+            TabModel tabModel = new TabModel(true, File.createTempFile("FabrikUml", "plantuml"), "Untitled " + untitledId++);
+            createNewTab(tabModel);
+        } catch (IOException ex) {
+            Logger.getLogger(MainController.class.getName()).log(Level.SEVERE, "Could not create temporary file.", ex);
         }
+    }
+    
+    private void createNewTab(String filename) {
+        File f = new File(filename);
+        TabModel tabModel = new TabModel(false, f, f.getName());
+        createNewTab(tabModel);
     }
     
     @FXML
     protected void handleNewAction(ActionEvent e) {
         System.out.println("Fun times.");
-
-        createNewTab("Tab " + Integer.toString(i++));
+        createUntitledTab();
     }
     
     @FXML
     protected void handleDragOver(DragEvent e) {
         System.out.println("Drag over: " + e.getGestureTarget());
-//        if (e.getGestureSource() != documentListView) {
-            e.acceptTransferModes(TransferMode.ANY);
-//        }
+        e.acceptTransferModes(TransferMode.ANY);
         
         e.consume();
     }
@@ -178,60 +167,6 @@ public class MainController implements Initializable {
         
         e.setDropCompleted(success);
         e.consume();
-    }
-    
-    @FXML
-    protected void handleMouseClicked(MouseEvent e) {
-//        String filename = documentListView.getSelectionModel().getSelectedItem();
-//        Logger.getGlobal().warning(filename);
-//        
-//        openFile(filename);
-    }
-
-//    protected void openFile(String filename) {
-//        try {
-//            // Open file in editor.
-//            String data = new String(Files.readAllBytes(Paths.get(filename)));
-//
-//            // codeArea.replaceText(data);
-//
-//            // Go ahead and generate an Image to display.
-//            generatePng(data);
-//        } catch (FileNotFoundException ex) {
-//            Logger.getLogger(MainController.class.getName()).log(Level.SEVERE, null, ex);
-//        } catch (IOException ex) {
-//            Logger.getLogger(MainController.class.getName()).log(Level.SEVERE, null, ex);
-//        }
-//    }
-    
-    protected void generatePng(String uml) throws IOException
-    {
-        // Time the image generation.
-        long startTime = System.nanoTime();
-
-        ByteArrayOutputStream png = new ByteArrayOutputStream(1000000);
-        SourceStringReader reader = new SourceStringReader(uml);
-
-        // Write the first image to "png"
-        String desc = reader.generateImage(png);
-        
-        Logger.getGlobal().warning(desc);
-        
-        InputStream pngLoad = new ByteArrayInputStream(png.toByteArray());
-        
-        Image diagram = new Image(pngLoad);
-        // imagePane.getBackground().getImages().add(new BackgroundImage(diagram, null, null, null, null));
-        
-//        imageView.setImage(diagram);
-        
-        // Return a null string if no generation.
-        
-        long stopTime = System.nanoTime();
-        long elapsed = (stopTime - startTime) / 10000000;
-
-        Logger.getGlobal().log(Level.WARNING, "{0}ms", Long.toString(elapsed));
-
-        elapsedTimeMs.setText(Long.toString(elapsed) + "ms");
     }
 
 }
