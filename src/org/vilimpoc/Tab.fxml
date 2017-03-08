@@ -15,7 +15,7 @@
               <StackPane fx:id="codeAreaPane" prefHeight="150.0" prefWidth="200.0">
                   <CodeArea fx:id="codeArea" prefHeight="150.0" prefWidth="200.0" />
               </StackPane>
-              <StackPane prefHeight="150.0" prefWidth="200.0">
+              <StackPane fx:id="previewPane" prefHeight="150.0" prefWidth="200.0">
                   <ImageView fx:id="preview" />
               </StackPane>
           </items>

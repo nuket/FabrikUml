@@ -56,6 +56,9 @@ public class TabController implements Initializable {
     private CodeArea  codeArea;
     
     @FXML
+    private StackPane previewPane;
+    
+    @FXML
     private ImageView preview;
 
     private final KeyCombination save = new KeyCodeCombination(KeyCode.S, KeyCombination.CONTROL_DOWN);
@@ -158,9 +161,15 @@ public class TabController implements Initializable {
 //        codeAreaPane.getChildren().add(codeArea);
         codeAreaPane.getStylesheets().add(FabrikUml.class.getResource("PlantUmlSyntax.css").toExternalForm());
 //        
-//        imageView.fitWidthProperty().bind(imagePane.widthProperty());
-//        imageView.fitHeightProperty().bind(imagePane.heightProperty());
-//        imageView.setPreserveRatio(true);
+        preview.fitWidthProperty().bind(previewPane.widthProperty());
+        preview.fitHeightProperty().bind(previewPane.heightProperty());
+        preview.setPreserveRatio(true);
+        
+        try {
+            generatePng();
+        } catch (IOException ex) {
+            Logger.getLogger(TabController.class.getName()).log(Level.SEVERE, null, ex);
+        }
     }
     
     protected void setTabModel(TabModel model) {
@@ -207,6 +216,12 @@ public class TabController implements Initializable {
                 StandardOpenOption.CREATE, StandardOpenOption.TRUNCATE_EXISTING, StandardOpenOption.WRITE);
             
             tab.setText(model.backingFile.getName());
+
+            // No longer Untitled, so skip the dialog from now on.
+            model.untitled = false;
+
+            generatePng();
+            
             // codeAreaPane.getParent()).setText(model.backingFile.getName();
         } catch (UnsupportedEncodingException ex) {
             Logger.getLogger(TabController.class.getName()).log(Level.SEVERE, null, ex);
@@ -215,13 +230,13 @@ public class TabController implements Initializable {
         }
     }
     
-    protected void generatePng(String uml) throws IOException
+    protected void generatePng() throws IOException
     {
         // Time the image generation.
         long startTime = System.nanoTime();
 
         ByteArrayOutputStream png = new ByteArrayOutputStream(1000000);
-        SourceStringReader reader = new SourceStringReader(uml);
+        SourceStringReader reader = new SourceStringReader(codeArea.getText());
 
         // Write the first image to "png"
         String desc = reader.generateImage(png);
@@ -231,9 +246,8 @@ public class TabController implements Initializable {
         InputStream pngLoad = new ByteArrayInputStream(png.toByteArray());
         
         Image diagram = new Image(pngLoad);
-        // imagePane.getBackground().getImages().add(new BackgroundImage(diagram, null, null, null, null));
-        
-//        imageView.setImage(diagram);
+       
+        preview.setImage(diagram);
         
         // Return a null string if no generation.
         
