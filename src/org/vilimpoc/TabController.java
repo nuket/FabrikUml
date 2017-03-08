@@ -1,11 +1,10 @@
-/*
- * To change this license header, choose License Headers in Project Properties.
- * To change this template file, choose Tools | Templates
- * and open the template in the editor.
- */
 package org.vilimpoc;
 
+import java.io.File;
+import java.io.FileNotFoundException;
+import java.io.IOException;
 import java.net.URL;
+import java.nio.file.Files;
 import java.time.Duration;
 import java.util.Collection;
 import java.util.Collections;
@@ -13,6 +12,8 @@ import java.util.Optional;
 import java.util.ResourceBundle;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import java.util.regex.Matcher;
 import javafx.concurrent.Task;
 import javafx.fxml.FXML;
@@ -29,19 +30,18 @@ import org.fxmisc.richtext.model.StyleSpansBuilder;
  *
  * @author Max
  */
-public class TabController implements Initializable {
+class TabController implements Initializable {
 
     @FXML
-    protected StackPane codeAreaPane;
+    private StackPane codeAreaPane;
     
     @FXML
-    protected CodeArea  codeArea;
+    private CodeArea  codeArea;
     
     @FXML
-    protected ImageView preview;
+    private ImageView preview;
 
-//    private       CodeArea        codeArea;
-    protected static ExecutorService executor;
+    private static ExecutorService executor;
     
     private Task<StyleSpans<Collection<String>>> computeHighlightingAsync() {
         String text = codeArea.getText();
@@ -121,6 +121,22 @@ public class TabController implements Initializable {
 //        imageView.fitWidthProperty().bind(imagePane.widthProperty());
 //        imageView.fitHeightProperty().bind(imagePane.heightProperty());
 //        imageView.setPreserveRatio(true);
+    }
+    
+    protected void openFile(File f) {
+        try {
+            // Open file in editor.
+            String data = new String(Files.readAllBytes(f.toPath()));
+
+            codeArea.replaceText(data);
+
+            // Go ahead and generate an Image to display.
+            // generatePng(data);
+        } catch (FileNotFoundException ex) {
+            Logger.getLogger(MainController.class.getName()).log(Level.SEVERE, null, ex);
+        } catch (IOException ex) {
+            Logger.getLogger(MainController.class.getName()).log(Level.SEVERE, null, ex);
+        }
     }
     
 }

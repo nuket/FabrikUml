@@ -24,12 +24,9 @@ package org.vilimpoc;
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.File;
-import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.URL;
-import java.nio.file.Files;
-import java.nio.file.Paths;
 import java.util.ResourceBundle;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -49,40 +46,34 @@ import javafx.scene.input.KeyCode;
 import javafx.scene.input.KeyCodeCombination;
 import javafx.scene.input.KeyCombination;
 import javafx.scene.input.MouseEvent;
+import javafx.scene.input.TransferMode;
 import net.sourceforge.plantuml.SourceStringReader;
 
 /**
  *
  * @author Max
  */
-public class MainController implements Initializable {
+class MainController implements Initializable {
 
     // Absolute file paths are unique.
-    protected final ObservableList<String> filenames = FXCollections.observableArrayList();
-    
-//    @FXML
-//    protected ListView<String> documentListView;
-//    
-//    @FXML
-//    protected StackPane codeAreaPane;
-//    
-//    @FXML
-//    protected StackPane imagePane;
-//    
-//    @FXML
-//    protected ImageView imageView;
-    
-    @FXML
-    protected TabPane tabPane;
-    
-    @FXML
-    protected Label elapsedTimeMs;
+    private final ObservableList<String> filenames = FXCollections.observableArrayList();
 
-    // This actually matches any time S is pressed. LOL.
-    final KeyCombination save = new KeyCodeCombination(KeyCode.S, KeyCombination.CONTROL_ANY);
+    @FXML
+    private TabPane tabPane;
+    
+    @FXML
+    private Label   elapsedTimeMs;
+
+    
+    private final KeyCombination save = new KeyCodeCombination(KeyCode.S, KeyCombination.CONTROL_DOWN);
+    
+    // Observe the filenames list and open new tabs accordingly.
+    
     
     @Override
     public void initialize(URL url, ResourceBundle rb) {
+        // tabPane.getTabs().
+        
 //        documentListView.setItems(filenames);
         // tabPane.getTabs()
 
@@ -100,20 +91,41 @@ public class MainController implements Initializable {
 //        });
     }
     
+//    @FXML
+//    protected void handleGlobalShortcuts(KeyEvent e) {
+//        System.out.println("Key pressed.");
+//    }
+    
     static int i = 0;
     
-    @FXML
-    protected void handleNewAction(ActionEvent e) {
-        System.out.println("Fun times.");
-        
-//        Tab tab = new Tab("Tab" + Integer.toString(i));
-//        SplitPane splitPane = new SplitPane();
+    protected void createNewTab(String filename) {
+        File f = new File(filename);
+
+        if (!f.exists()) {
+            System.err.println("File does not exist.");
+            return;
+        }
         
         try {
             // Create a new Tab, configure it up.
-            Tab tab = FXMLLoader.load(getClass().getResource("Tab.fxml"), null);
-            tab.setText("Tab " + Integer.toString(i++));
+            // ResourceBundle rb = ResourceBundle.getBundle("");
             
+            FXMLLoader loader = new FXMLLoader(
+                getClass().getResource(
+                    "Tab.fxml"
+                )
+            );
+
+//            Tab tab = FXMLLoader.load(getClass().getResource("Tab.fxml"));
+//            tab.setText("Tab " + Integer.toString(i++));
+            
+//            Tab tab = FXMLLoader.FXMLLoader.load(getClass().getResource("Tab.fxml"), null);
+            // tab.setText(name);
+            
+            TabController tabController = loader.<TabController>getController();
+            tabController.openFile(f);
+            
+            Tab tab = (Tab) loader.load();
             tabPane.getTabs().add(tab);
         } catch (IOException ex) {
             Logger.getLogger(MainController.class.getName()).log(Level.SEVERE, null, ex);
@@ -121,9 +133,17 @@ public class MainController implements Initializable {
     }
     
     @FXML
+    protected void handleNewAction(ActionEvent e) {
+        System.out.println("Fun times.");
+
+        createNewTab("Tab " + Integer.toString(i++));
+    }
+    
+    @FXML
     protected void handleDragOver(DragEvent e) {
+        System.out.println("Drag over: " + e.getGestureTarget());
 //        if (e.getGestureSource() != documentListView) {
-//            e.acceptTransferModes(TransferMode.ANY);
+            e.acceptTransferModes(TransferMode.ANY);
 //        }
         
         e.consume();
@@ -131,6 +151,9 @@ public class MainController implements Initializable {
     
     @FXML
     protected void handleDragDropped(DragEvent e) {
+        // TODO: If the file does not exist or is read-only or access controlled
+        //       and we can tell that right here, then DO NOT OPEN IT?
+        
         Dragboard b = e.getDragboard();
         boolean success = false;
 
@@ -149,7 +172,7 @@ public class MainController implements Initializable {
                 }
             }
             
-            openFile(filenames.get(filenames.size() - 1));
+            createNewTab(filenames.get(filenames.size() - 1));
         }
         
         e.setDropCompleted(success);
@@ -164,21 +187,21 @@ public class MainController implements Initializable {
 //        openFile(filename);
     }
 
-    protected void openFile(String filename) {
-        try {
-            // Open file in editor.
-            String data = new String(Files.readAllBytes(Paths.get(filename)));
-
-            // codeArea.replaceText(data);
-
-            // Go ahead and generate an Image to display.
-            generatePng(data);
-        } catch (FileNotFoundException ex) {
-            Logger.getLogger(MainController.class.getName()).log(Level.SEVERE, null, ex);
-        } catch (IOException ex) {
-            Logger.getLogger(MainController.class.getName()).log(Level.SEVERE, null, ex);
-        }
-    }
+//    protected void openFile(String filename) {
+//        try {
+//            // Open file in editor.
+//            String data = new String(Files.readAllBytes(Paths.get(filename)));
+//
+//            // codeArea.replaceText(data);
+//
+//            // Go ahead and generate an Image to display.
+//            generatePng(data);
+//        } catch (FileNotFoundException ex) {
+//            Logger.getLogger(MainController.class.getName()).log(Level.SEVERE, null, ex);
+//        } catch (IOException ex) {
+//            Logger.getLogger(MainController.class.getName()).log(Level.SEVERE, null, ex);
+//        }
+//    }
     
     protected void generatePng(String uml) throws IOException
     {
