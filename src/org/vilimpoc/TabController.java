@@ -1,6 +1,26 @@
+/**
+    Copyright (c) 2017 Max Vilimpoc
+
+    Permission is hereby granted, free of charge, to any person obtaining a copy
+    of this software and associated documentation files (the "Software"), to deal
+    in the Software without restriction, including without limitation the rights
+    to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+    copies of the Software, and to permit persons to whom the Software is
+    furnished to do so, subject to the following conditions:
+
+    The above copyright notice and this permission notice shall be included in all
+    copies or substantial portions of the Software.
+
+    THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+    IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+    FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+    AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+    LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+    OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+    SOFTWARE.
+*/
 package org.vilimpoc;
 
-import com.sun.glass.ui.Application;
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.File;
@@ -11,7 +31,6 @@ import java.io.UnsupportedEncodingException;
 import java.net.URL;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
-import java.nio.file.OpenOption;
 import java.nio.file.StandardOpenOption;
 import java.time.Duration;
 import java.util.Collection;
@@ -61,18 +80,13 @@ public class TabController implements Initializable {
     @FXML
     private ImageView preview;
 
-    private final KeyCombination save = new KeyCodeCombination(KeyCode.S, KeyCombination.CONTROL_DOWN);
+    private final KeyCombination refresh = new KeyCodeCombination(KeyCode.R, KeyCombination.CONTROL_DOWN);
     
     private TabModel model;
     
     private ExecutorService executor;
     
     private static List<ExecutorService> executors = new LinkedList<>();
-    
-    // Note the last-used folder, and go to it automatically when 
-    // opening or saving a file.
-    private static String lastUsedFolder;
-    
     
     protected static void shutdownAll() {
         for (ExecutorService e : executors) {
@@ -158,25 +172,16 @@ public class TabController implements Initializable {
         
         // TODO: Rerender after no keystroke has been entered in 500ms.
         
-//        codeAreaPane.getChildren().add(codeArea);
         codeAreaPane.getStylesheets().add(FabrikUml.class.getResource("PlantUmlSyntax.css").toExternalForm());
 //        
         preview.fitWidthProperty().bind(previewPane.widthProperty());
         preview.fitHeightProperty().bind(previewPane.heightProperty());
         preview.setPreserveRatio(true);
-        
-        try {
-            generatePng();
-        } catch (IOException ex) {
-            Logger.getLogger(TabController.class.getName()).log(Level.SEVERE, null, ex);
-        }
+ 
+        generatePng();
     }
     
-    protected void setTabModel(TabModel model) {
-        this.model = model;
-    }
-    
-    protected void openFile(File f) {
+    private void openFile(File f) {
         try {
             // Open file in editor.
             String data = new String(Files.readAllBytes(f.toPath()));
@@ -192,17 +197,20 @@ public class TabController implements Initializable {
         }
     }
     
-    protected void saveData() {
+    private void saveData() {
         if (model.untitled) {
             FileChooser fileChooser = new FileChooser();
-            fileChooser.setTitle("Open PlantUML File");
+            fileChooser.setTitle("Save PlantUML File");
             fileChooser.getExtensionFilters().addAll(
                     new ExtensionFilter("PlantUML Files", "*.plantuml"),
                     new ExtensionFilter("All Files", "*.*"));
             
             File selectedFile = fileChooser.showSaveDialog(codeAreaPane.getScene().getWindow());
             
-            if (selectedFile != null) {
+            if (selectedFile == null) {
+                return;
+            }
+            else {
                 model.backingFile = selectedFile;
             }
         }
@@ -230,7 +238,7 @@ public class TabController implements Initializable {
         }
     }
     
-    protected void generatePng() throws IOException
+    private void generatePng()
     {
         // Time the image generation.
         long startTime = System.nanoTime();
@@ -239,9 +247,18 @@ public class TabController implements Initializable {
         SourceStringReader reader = new SourceStringReader(codeArea.getText());
 
         // Write the first image to "png"
-        String desc = reader.generateImage(png);
+        String desc;
         
-        Logger.getGlobal().warning(desc);
+        try {
+            desc = reader.generateImage(png);
+            System.out.println(desc);
+        } catch (IOException ex) {
+            Logger.getLogger(TabController.class.getName()).log(Level.SEVERE, null, ex);
+        }
+        
+//        if (desc.equals("(Error)")) {
+//            
+//        }
         
         InputStream pngLoad = new ByteArrayInputStream(png.toByteArray());
         
@@ -254,27 +271,37 @@ public class TabController implements Initializable {
         long stopTime = System.nanoTime();
         long elapsed = (stopTime - startTime) / 10000000;
 
-        Logger.getGlobal().log(Level.WARNING, "{0}ms", Long.toString(elapsed));
+        System.out.println(Long.toString(elapsed) + "ms");
 
         // TODO: Update status bar.
         // elapsedTimeMs.setText(Long.toString(elapsed) + "ms");
     }
     
     @FXML
-    protected void handleOnClosed() {
-        System.out.println("Tab closed");
-        
+    protected void handleOnCloseRequest() {
         executors.remove(executor);
+        
+        System.out.println("Shutting down ExecutorService: " + executor);
         executor.shutdown();
     }
   
     @FXML
     protected void handleShortcuts(KeyEvent e) {        
-        if (save.match(e)) {            
+        if (refresh.match(e)) {
+            generatePng();
+            e.consume();
+        }
+        else
+        if (Common.SAVE.match(e)) {            
             // Check the current TabModel and save data
             // to that file where possible.
             saveData();
+            e.consume();
         }
+    }
+
+    protected void setTabModel(TabModel model) {
+        this.model = model;
     }
 
 }

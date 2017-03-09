@@ -30,6 +30,8 @@ import java.util.logging.Logger;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.event.ActionEvent;
+import javafx.event.Event;
+import javafx.event.EventHandler;
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
 import javafx.fxml.Initializable;
@@ -38,11 +40,7 @@ import javafx.scene.control.Tab;
 import javafx.scene.control.TabPane;
 import javafx.scene.input.DragEvent;
 import javafx.scene.input.Dragboard;
-import javafx.scene.input.KeyCode;
-import javafx.scene.input.KeyCodeCombination;
-import javafx.scene.input.KeyCombination;
 import javafx.scene.input.KeyEvent;
-import javafx.scene.input.MouseEvent;
 import javafx.scene.input.TransferMode;
 
 public class MainController implements Initializable {
@@ -56,11 +54,7 @@ public class MainController implements Initializable {
     @FXML
     private Label   elapsedTimeMs;
 
-    private final KeyCombination new_ = new KeyCodeCombination(KeyCode.N, KeyCombination.CONTROL_DOWN);
-    
-    // Observe the filenames list and open new tabs accordingly.
-
-    private int untitledId = 0;
+    private int     untitledId = 0;
 
     @Override
     public void initialize(URL url, ResourceBundle rb) {    
@@ -71,10 +65,25 @@ public class MainController implements Initializable {
     
     @FXML
     protected void handleGlobalShortcuts(KeyEvent e) {
-        System.out.println("Key pressed.");
-        
-        if (new_.match(e)) {
+        if (Common.NEW_.match(e)) {
             createUntitledTab();
+            e.consume();
+        }
+        else
+        if (Common.SAVE.match(e)) {
+            // Tell the currently-selected TabController to process CTRL-S.
+            tabPane.getSelectionModel().getSelectedItem().getContent().fireEvent(e);
+            e.consume();
+        }
+        else
+        if (Common.CLOSE.match(e)) {
+            // Tell the currently-selected Tab to close.
+            Tab tab = tabPane.getSelectionModel().getSelectedItem();
+            EventHandler<Event> handler = tab.getOnCloseRequest();
+            if (handler != null) {
+                handler.handle(null);
+            }
+            tabPane.getTabs().remove(tab);
         }
     }
     
@@ -100,6 +109,7 @@ public class MainController implements Initializable {
             tabController.setTabModel(tabModel);
             
             tabPane.getTabs().add(tab);
+            tabPane.getSelectionModel().select(tab);
         } catch (IOException ex) {
             Logger.getLogger(MainController.class.getName()).log(Level.SEVERE, null, ex);
         }        
@@ -107,16 +117,15 @@ public class MainController implements Initializable {
     
     private void createUntitledTab() {
         try {
-            TabModel tabModel = new TabModel(true, File.createTempFile("FabrikUml-", ".plantuml"), "Untitled " + untitledId++);
+            TabModel tabModel = new TabModel(true, Common.getUntitledFile(), "Untitled " + untitledId++);
             createNewTab(tabModel);
         } catch (IOException ex) {
             Logger.getLogger(MainController.class.getName()).log(Level.SEVERE, "Could not create temporary file.", ex);
         }
     }
     
-    private void createNewTab(String filename) {
-        File f = new File(filename);
-        TabModel tabModel = new TabModel(false, f, f.getName());
+    private void createNewTab(File file) {
+        TabModel tabModel = new TabModel(false, file, file.getName());
         createNewTab(tabModel);
     }
     
@@ -128,9 +137,8 @@ public class MainController implements Initializable {
     
     @FXML
     protected void handleDragOver(DragEvent e) {
-        System.out.println("Drag over: " + e.getGestureTarget());
-        e.acceptTransferModes(TransferMode.ANY);
-        
+        // System.out.println("Drag over: " + e.getGestureTarget());
+        e.acceptTransferModes(TransferMode.ANY);        
         e.consume();
     }
     
@@ -145,19 +153,20 @@ public class MainController implements Initializable {
         if (b.hasFiles()) {
             Logger.getGlobal().warning("Files dropped!");
             
+            // TODO: Fix up duplicate file open tracking.
+            
             success = true;
             for (File f : b.getFiles()) {
-                Logger.getGlobal().warning(f.getAbsolutePath());
-                
                 if (filenames.contains(f.getAbsolutePath())) {
                     Logger.getGlobal().warning("Don't add duplicate path.");
                 }
                 else {
                     filenames.add(f.getAbsolutePath());
+                    
+                    // 
+                    createNewTab(f);
                 }
             }
-            
-            createNewTab(filenames.get(filenames.size() - 1));
         }
         
         e.setDropCompleted(success);

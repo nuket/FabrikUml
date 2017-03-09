@@ -21,7 +21,11 @@
 */
 package org.vilimpoc;
 
+import java.io.IOException;
+import java.nio.file.Files;
 import java.util.ResourceBundle;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import static javafx.application.Application.launch;
 import javafx.fxml.FXMLLoader;
 import javafx.scene.Parent;
@@ -30,15 +34,12 @@ import javafx.application.Application;
 import javafx.scene.Scene;
 import javafx.stage.Stage;
 
-
 public class FabrikUml extends Application {
     
     @Override
     public void start(Stage stage) throws Exception {
         ResourceBundle bundle = ResourceBundle.getBundle("org.vilimpoc.resources.FabrikUml");
         Parent root = FXMLLoader.load(getClass().getResource("Main.fxml"), bundle);
-        
-        // Tab tab = FXMLLoader.load(getClass().getResource("Tab.fxml"), bundle);
         
         Scene scene = new Scene(root);
         
@@ -49,23 +50,34 @@ public class FabrikUml extends Application {
 
     @Override
     public void stop() throws Exception {
-        // This is very bad, but currently the way it is done.
-        //
         // Without this, the program will not terminate clearly, as the executor
-        // thread isn't cleaned up.
+        // threads aren't cleaned up.
         TabController.shutdownAll();
         
-        super.stop(); //To change body of generated methods, choose Tools | Templates.
+        super.stop();
     }
 
     /**
      * @param args the command line arguments
      */
     public static void main(String[] args) {
-        // Set up the temporary folder.
-        // File.
-        
-        launch(args);
+        try {
+            // Set up the temporary folder.
+            Files.createDirectories(Common.getWorkFolder());
+
+            // Start the UI.
+            launch(args);
+            
+            // Read the settings file:
+            // 
+            // Contains last-opened file list: These should be reopened.
+            // 
+            // Tell the MainController to open these files.
+            
+
+        } catch (IOException ex) {
+            Logger.getLogger(FabrikUml.class.getName()).log(Level.SEVERE, null, ex);
+        }
     }
-    
+
 }
