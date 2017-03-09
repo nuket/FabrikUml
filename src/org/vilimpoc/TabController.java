@@ -168,7 +168,7 @@ public class TabController implements Initializable {
                 })
                 .subscribe(this::applyHighlighting);
         
-        codeArea.replaceText(0, 0, PlantUmlSyntax.SAMPLE_CODE);
+        // codeArea.replaceText(0, 0, PlantUmlSyntax.SAMPLE_CODE);
         
         // TODO: Rerender after no keystroke has been entered in 500ms.
         
@@ -200,9 +200,9 @@ public class TabController implements Initializable {
     private void saveData() {
         if (model.untitled) {
             FileChooser fileChooser = new FileChooser();
-            fileChooser.setTitle("Save PlantUML File");
+            fileChooser.setTitle("Save File");
             fileChooser.getExtensionFilters().addAll(
-                    new ExtensionFilter("PlantUML Files", "*.plantuml"),
+                    new ExtensionFilter("Supported Files", "*.txt", "*.dot", "*.plantuml"),
                     new ExtensionFilter("All Files", "*.*"));
             fileChooser.setInitialDirectory(Common.getLastUsedFolder());
             
@@ -307,6 +307,15 @@ public class TabController implements Initializable {
 
     protected void setTabModel(TabModel model) {
         this.model = model;
+        
+        if (model.untitled == false && Files.exists(model.backingFile.toPath())) {
+            try {
+                String data = new String(Files.readAllBytes(model.backingFile.toPath()), StandardCharsets.UTF_8);
+                codeArea.replaceText(0, 0, data);
+            } catch (IOException ex) {
+                Logger.getLogger(TabController.class.getName()).log(Level.SEVERE, null, ex);
+            }
+        }
     }
 
 }

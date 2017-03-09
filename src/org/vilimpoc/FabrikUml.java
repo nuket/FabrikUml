@@ -61,6 +61,8 @@ public class FabrikUml extends Application {
      * @param args the command line arguments
      */
     public static void main(String[] args) {
+        System.out.println(System.getenv("PATH"));
+        
         try {
             // Set up the temporary folder.
             Files.createDirectories(Common.getWorkFolder());

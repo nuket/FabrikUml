@@ -77,7 +77,7 @@ public class MainController implements Initializable {
         }
 
         // If there were no tabs restored, then create one untitled tab.
-        if (tabPane.getTabs().isEmpty()) {
+        if (models.isEmpty()) {
             createUntitledTab();
         }
     }
@@ -95,7 +95,7 @@ public class MainController implements Initializable {
             e.consume();
             
             // Save tab config after creating, saving, or closing any of the tabs.
-             Common.saveTabConfig(tabPane.getTabs());
+            Common.saveTabConfig(tabPane.getTabs());
         }
         else
         if (Common.CLOSE.match(e)) {
