@@ -22,10 +22,16 @@
 package org.vilimpoc;
 
 import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
 import java.io.IOException;
+import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import javafx.scene.control.Tab;
+import java.util.Properties;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javafx.scene.input.KeyCode;
 import javafx.scene.input.KeyCodeCombination;
 import javafx.scene.input.KeyCombination;
@@ -35,12 +41,13 @@ class Common {
 //    static Tab           currentTab;
 //    static TabController currentTabController;
 
-    private static String lastUsedFolder;
-
+    private static final Properties settings = new Properties();
+    
     private static final String UNTITLED_FILE_PREFIX = "FabrikUml-";
     private static final String UNTITLED_FILE_SUFFIX = ".txt";
 
-    static final String WORK_FOLDER = ".FabrikUml";
+    private static final String WORK_FOLDER = ".FabrikUml";
+    private static final String SETTINGS_FILE = "FabrikUml.settings";
 
     static final KeyCombination NEW_  = new KeyCodeCombination(KeyCode.N, KeyCombination.CONTROL_DOWN);
     static final KeyCombination SAVE  = new KeyCodeCombination(KeyCode.S, KeyCombination.CONTROL_DOWN);
@@ -54,11 +61,46 @@ class Common {
         return Paths.get(System.getProperty("user.home"), Common.WORK_FOLDER);
     }
     
+    static Path getSettingsFile() {
+        return Paths.get(getWorkFolder().toString(), SETTINGS_FILE);
+    }
+    
     static File getUntitledFile() throws IOException {
         return File.createTempFile(UNTITLED_FILE_PREFIX, UNTITLED_FILE_SUFFIX, getWorkFolder().toFile());
     }
     
+    static File getLastUsedFolder() {
+        return new File(settings.getProperty("LAST_USED_FOLDER"));
+    }
+    
+    static void setLastUsedFolder(String folder) {
+        settings.setProperty("LAST_USED_FOLDER", folder);
+        save();
+    }
+    
+    private static void save() {
+        try {
+            settings.store(new FileOutputStream(getSettingsFile().toFile()), "FabrikUml Settings");
+        } catch (FileNotFoundException ex) {
+            Logger.getLogger(Common.class.getName()).log(Level.SEVERE, null, ex);
+        } catch (IOException ex) {
+            Logger.getLogger(Common.class.getName()).log(Level.SEVERE, null, ex);
+        }
+    }
+    
     static {
-        
+        if (Files.exists(getSettingsFile())) {
+            try {
+                settings.load(new FileInputStream(getSettingsFile().toFile()));
+            } catch (FileNotFoundException ex) {
+                Logger.getLogger(Common.class.getName()).log(Level.SEVERE, null, ex);
+            } catch (IOException ex) {
+                Logger.getLogger(Common.class.getName()).log(Level.SEVERE, null, ex);
+            }
+        }
+        else {
+            // Set default property values
+            settings.setProperty("LAST_USED_FOLDER", System.getProperty("user.home"));                    
+        }
     }
 }

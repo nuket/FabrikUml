@@ -91,7 +91,7 @@ public class TabController implements Initializable {
     protected static void shutdownAll() {
         for (ExecutorService e : executors) {
             System.out.println("Shutting down ExecutorService: " + e);
-            e.shutdown();
+            if (!e.isShutdown()) e.shutdown();
         }
     }
     
@@ -204,6 +204,7 @@ public class TabController implements Initializable {
             fileChooser.getExtensionFilters().addAll(
                     new ExtensionFilter("PlantUML Files", "*.plantuml"),
                     new ExtensionFilter("All Files", "*.*"));
+            fileChooser.setInitialDirectory(Common.getLastUsedFolder());
             
             File selectedFile = fileChooser.showSaveDialog(codeAreaPane.getScene().getWindow());
             
@@ -212,6 +213,9 @@ public class TabController implements Initializable {
             }
             else {
                 model.backingFile = selectedFile;
+                
+                // Save the last-used folder.
+                Common.setLastUsedFolder(selectedFile.getParent());
             }
         }
 
@@ -280,9 +284,9 @@ public class TabController implements Initializable {
     @FXML
     protected void handleOnCloseRequest() {
         executors.remove(executor);
-        
+
         System.out.println("Shutting down ExecutorService: " + executor);
-        executor.shutdown();
+        if (!executor.isShutdown()) executor.shutdown();
     }
   
     @FXML

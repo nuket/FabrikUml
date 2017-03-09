@@ -73,8 +73,6 @@ public class FabrikUml extends Application {
             // Contains last-opened file list: These should be reopened.
             // 
             // Tell the MainController to open these files.
-            
-
         } catch (IOException ex) {
             Logger.getLogger(FabrikUml.class.getName()).log(Level.SEVERE, null, ex);
         }

@@ -16,7 +16,6 @@
       <TabPane fx:id="tabPane" maxHeight="1.7976931348623157E308" VBox.vgrow="SOMETIMES" />
     <HBox id="HBox" alignment="CENTER_LEFT" spacing="5.0" VBox.vgrow="NEVER">
       <children>
-            <Button mnemonicParsing="false" onAction="#handleNewAction" text="%button.text.new" />
         <Label maxHeight="1.7976931348623157E308" maxWidth="-1.0" text="%label.text.help" HBox.hgrow="ALWAYS">
           <font>
             <Font size="11.0" fx:id="x3" />
