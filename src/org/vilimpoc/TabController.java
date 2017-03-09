@@ -227,7 +227,8 @@ public class TabController implements Initializable {
                 codeArea.getText().getBytes(StandardCharsets.UTF_8), 
                 StandardOpenOption.CREATE, StandardOpenOption.TRUNCATE_EXISTING, StandardOpenOption.WRITE);
             
-            tab.setText(model.backingFile.getName());
+            model.tabText = model.backingFile.getName();
+            tab.setText(model.tabText);
 
             // No longer Untitled, so skip the dialog from now on.
             model.untitled = false;

@@ -26,12 +26,15 @@ import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
-import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.util.HashMap;
+import java.util.LinkedList;
 import java.util.Properties;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import javafx.collections.ObservableList;
+import javafx.scene.control.Tab;
 import javafx.scene.input.KeyCode;
 import javafx.scene.input.KeyCodeCombination;
 import javafx.scene.input.KeyCombination;
@@ -40,7 +43,8 @@ class Common {
     // Unfortunately, we have to track this ourselves.
 //    static Tab           currentTab;
 //    static TabController currentTabController;
-
+    private static final HashMap<String, TabModel> tabs = new HashMap<String, TabModel>();
+    
     private static final Properties settings = new Properties();
     
     private static final String UNTITLED_FILE_PREFIX = "FabrikUml-";
@@ -89,18 +93,54 @@ class Common {
     }
     
     static {
-        if (Files.exists(getSettingsFile())) {
-            try {
-                settings.load(new FileInputStream(getSettingsFile().toFile()));
-            } catch (FileNotFoundException ex) {
-                Logger.getLogger(Common.class.getName()).log(Level.SEVERE, null, ex);
-            } catch (IOException ex) {
-                Logger.getLogger(Common.class.getName()).log(Level.SEVERE, null, ex);
-            }
-        }
-        else {
-            // Set default property values
+        try {
+            settings.load(new FileInputStream(getSettingsFile().toFile()));
+        } 
+        catch (IOException ex) {
+            // Set default property values, if file not found, etc.
             settings.setProperty("LAST_USED_FOLDER", System.getProperty("user.home"));                    
         }
+    }
+
+    static void saveTabConfig(ObservableList<Tab> tabs) {
+        int fileId = 0;
+        
+        // Clear all of the file properties.
+        for (int f = 0; f < 99; f++) {
+            if (settings.containsKey("file" + f)) {
+                settings.remove("file" + f);
+            }
+        }
+            
+        for (Tab t : tabs) {
+            System.out.println(t.getUserData().toString());
+            
+            settings.setProperty("file" + fileId, t.getUserData().toString());
+            fileId++;
+        };
+        
+        save();
+    }
+    
+    static LinkedList<TabModel> loadTabConfig() {
+        LinkedList<TabModel> models = new LinkedList<>();
+        
+        for (int fileId = 0; fileId < 99; fileId++) {
+            String key = "file" + fileId;
+            
+            if (settings.keySet().contains(key)) {
+                String value = settings.getProperty(key);
+                String[] fields = value.split(",");
+                
+                System.out.println(fields[0]);
+                System.out.println(fields[1]);
+                System.out.println(fields[2]);
+                
+                TabModel model = new TabModel(fields[0], fields[1], fields[2]);
+                models.add(model);
+            }
+        }
+        
+        return models;
     }
 }

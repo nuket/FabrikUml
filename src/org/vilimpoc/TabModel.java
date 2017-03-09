@@ -34,4 +34,15 @@ public class TabModel {
         this.backingFile = backingFile;
         this.tabText     = tabText;
     }
+    
+    public TabModel(String untitled, String backingFile, String tabText) {
+        this.untitled    = Boolean.parseBoolean(untitled);
+        this.backingFile = new File(backingFile);
+        this.tabText     = tabText;
+    }
+    
+    @Override
+    public String toString() {
+        return untitled + "," + backingFile + "," + tabText;
+    }
 }

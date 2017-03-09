@@ -24,10 +24,12 @@ package org.vilimpoc;
 import java.io.File;
 import java.io.IOException;
 import java.net.URL;
+import java.util.LinkedList;
 import java.util.ResourceBundle;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javafx.collections.FXCollections;
+import javafx.collections.ListChangeListener;
 import javafx.collections.ObservableList;
 import javafx.event.ActionEvent;
 import javafx.event.Event;
@@ -58,9 +60,26 @@ public class MainController implements Initializable {
 
     @Override
     public void initialize(URL url, ResourceBundle rb) {    
-        // TODO: Recreate Window with open all previous files in Tabs
+        // Set up change listener.
+        tabPane.getTabs().addListener(new ListChangeListener<Tab>() {
+            @Override
+            public void onChanged(ListChangeListener.Change<? extends Tab> c) {
+                // Every time the Tag list changes, save all of the Tab model data.
+                Common.saveTabConfig(tabPane.getTabs());
+            }
+        });
         
-        createUntitledTab();
+        // TODO: Recreate Window with open all previous files in Tabs
+        LinkedList<TabModel> models = Common.loadTabConfig();
+
+        for (TabModel model : models) {
+            createNewTab(model);
+        }
+
+        // If there were no tabs restored, then create one untitled tab.
+        if (tabPane.getTabs().isEmpty()) {
+            createUntitledTab();
+        }
     }
     
     @FXML
@@ -74,6 +93,9 @@ public class MainController implements Initializable {
             // Tell the currently-selected TabController to process CTRL-S.
             tabPane.getSelectionModel().getSelectedItem().getContent().fireEvent(e);
             e.consume();
+            
+            // Save tab config after creating, saving, or closing any of the tabs.
+             Common.saveTabConfig(tabPane.getTabs());
         }
         else
         if (Common.CLOSE.match(e)) {
@@ -103,9 +125,10 @@ public class MainController implements Initializable {
             Tab tab = (Tab) loader.load();
             TabController tabController = loader.<TabController>getController();
             
-            System.out.println(tabModel);
+            // System.out.println(tabModel);
             
             tab.setText(tabModel.tabText);
+            tab.setUserData(tabModel);
             tabController.setTabModel(tabModel);
             
             tabPane.getTabs().add(tab);
