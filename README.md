@@ -14,9 +14,9 @@ Looks like this:
 
 Easy:
 
-. Install JDK 8
-. Install JavaFX SDK
-. Install NetBeans
+1. Install JDK 8
+1. Install JavaFX SDK
+1. Install NetBeans
 
 Open Project:
 
