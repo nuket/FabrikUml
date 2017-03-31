@@ -1,19 +1,30 @@
 # FabrikUml
 
-A quick little PlantUML previewer, using JavaFX. I was getting tired of using various other plugins, npm packages, requiring full-blown Eclipse environments, etc., just to make quick diagrams.
+A quick little PlantUML previewer, using JavaFX. I was getting tired of using various other 
+plugins, npm packages, requiring full-blown Eclipse environments, etc., just to make quick 
+diagrams.
 
 Works by dragging and dropping a file into the Documents pane or editing the text directly.
 
 Looks like this:
 
-![Screenshot](editing-window.png)
+![Editing Window Screenshot](editing-window.png)
 
-## TODOs:
+# Development
 
-* Doesn't currently save files.
-* Proper packaging, remove NetBeans requirement.
-* Fix keyboard shortcuts.
-* Remove menu bar (probably).
+Easy:
+
+. Install JDK 8
+. Install JavaFX SDK
+. Install NetBeans
+
+Open Project:
+
+![Open Project Window Screenshot](opening-project-window.png)
+
+Profit.
+
+Any help in improving the program would be appreciated.
 
 # Licenses
 
