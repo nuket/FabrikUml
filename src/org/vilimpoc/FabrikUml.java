@@ -32,6 +32,7 @@ import javafx.scene.Parent;
 
 import javafx.application.Application;
 import javafx.scene.Scene;
+import javafx.scene.image.Image;
 import javafx.stage.Stage;
 
 public class FabrikUml extends Application {
@@ -45,6 +46,8 @@ public class FabrikUml extends Application {
         
         stage.setScene(scene);
         stage.setTitle("FabrikUml");
+        stage.getIcons().add(new Image(getClass().getResourceAsStream("resources/icon.png")));
+
         stage.show();
     }
 
